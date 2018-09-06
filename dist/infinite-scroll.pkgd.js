@@ -1234,20 +1234,6 @@ function ajax_request( url, responseType, onLoad, onError ){
   req.open( 'GET', url, true );
   // set responseType document to return DOM
   req.responseType = responseType || '';
-  attach_request_callbacks(req, url, onLoad, onError);
-  // set X-Requested-With header to check that is ajax request
-  req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-  req.send();
-}
-
-function jsonp_request( url, responseType, onLoad, onError ){
-  var req = document.createElement("script");
-  req.src = url;
-  attach_request_callbacks(req, url, onLoad, onError);
-  document.getElementsByTagName("head")[0].appendChild(req);
-}
-
-function attach_request_callbacks(req, url, onLoad, onError){
   req.onload = function() {
     if ( req.status == 200 ) {
       onLoad( req.response );
@@ -1263,7 +1249,22 @@ function attach_request_callbacks(req, url, onLoad, onError){
     var error = new Error( 'Network error requesting ' + url );
     onError( error );
   };
+  // set X-Requested-With header to check that is ajax request
+  req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+  req.send();
+}
 
+function jsonp_request( url, responseType, onLoad, onError ){
+  var req = document.createElement("script");
+  req.src = url;
+  req.onload = function() {
+    onLoad( req.response );
+  };
+  req.onerror = function() {
+    var error = new Error( 'Network error requesting ' + url );
+    onError( error );
+  };
+  document.getElementsByTagName("head")[0].appendChild(req);
 }
 
 // --------------------------  -------------------------- //
@@ -1804,7 +1805,7 @@ return InfiniteScroll;
 }));
 
 /*!
- * Infinite Scroll v3.0.6
+ * Infinite Scroll v3.0.5
  * Automatically add next page
  *
  * Licensed GPLv3 for open source use
