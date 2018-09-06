@@ -264,14 +264,34 @@ proto.stopPrefill = function() {
 // -------------------------- request -------------------------- //
 
 function request( url, responseType, onLoad, onError ) {
+  switch(responseType){
+    case "jsonp":
+      jsonp_request( url, responseType, onLoad, onError );
+      break;
+    default:
+      ajax_request( url, responseType, onLoad, onError );
+  }
+}
+
+function ajax_request( url, responseType, onLoad, onError ){
   var req = new XMLHttpRequest();
   req.open( 'GET', url, true );
   // set responseType document to return DOM
   req.responseType = responseType || '';
-
+  attach_request_callbacks(req, url, onLoad, onError);
   // set X-Requested-With header to check that is ajax request
   req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+  req.send();
+}
 
+function jsonp_request( url, responseType, onLoad, onError ){
+  var req = document.createElement("script");
+  req.src = url;
+  attach_request_callbacks(req, url, onLoad, onError);
+  document.getElementsByTagName("head")[0].appendChild(req);
+}
+
+function attach_request_callbacks(req, url, onLoad, onError){
   req.onload = function() {
     if ( req.status == 200 ) {
       onLoad( req.response );
@@ -288,7 +308,6 @@ function request( url, responseType, onLoad, onError ) {
     onError( error );
   };
 
-  req.send();
 }
 
 // --------------------------  -------------------------- //
